@@ -52,7 +52,7 @@ def lambda_handler(event, context):
         encoded_data = json.dumps(entry_data).encode('utf-8')
         encoded_data_instance = json.dumps(entry_data2).encode('utf-8')
         try:
-            response_instance = http.request('POST', 'https://nsgrid1.utdallas.edu/wapi/v2.10/record:host?_return_fields%2B=name,ipv4addrs&_return_as_object=1',body=encoded_data_instance, headers=headers)
+            response_instance = http.request('POST', 'https://<hostname>/wapi/v2.10/record:host?_return_fields%2B=name,ipv4addrs&_return_as_object=1',body=encoded_data_instance, headers=headers)
             print (response_instance.data)    
         except Exception as e:
             print(e)
@@ -61,18 +61,18 @@ def lambda_handler(event, context):
     elif state == "terminated":
         #infoblox api call to delete dns entry with ip and hostname
         print("Call to infoblox to delete record")
-        r1 = http.request('GET', 'https://nsgrid1.utdallas.edu/wapi/v2.10/record:host?name='+host_instance+'&_return_as_object=1',headers=headers)
+        r1 = http.request('GET', 'https://<hostname>/wapi/v2.10/record:host?name='+host_instance+'&_return_as_object=1',headers=headers)
         x1 = json.loads(r1.data)
         ip_instance = x1["result"][0]["ipv4addrs"][0]["ipv4addr"] # get IP address of the entry
         
-        #r1 = http.request('GET', 'https://nsgrid1.utdallas.edu/wapi/v2.10/record:host?name='+host_instance+'&_return_as_object=1',headers=headers)
-        r = http.request('GET', 'https://nsgrid1.utdallas.edu/wapi/v2.10/search?address='+ip_instance+'&_return_as_object=1',headers=headers) # query to get all hostnames records from ip
+        #r1 = http.request('GET', 'https://<hostname>/wapi/v2.10/record:host?name='+host_instance+'&_return_as_object=1',headers=headers)
+        r = http.request('GET', 'https://<hostname>/wapi/v2.10/search?address='+ip_instance+'&_return_as_object=1',headers=headers) # query to get all hostnames records from ip
         x = json.loads(r.data)
         
         for i in x["result"]: # get record id and hostname for each and delete individually
             record = i["_ref"].split('host/')[1].split(':')[0]
             host = i["_ref"].split('host/')[1].split(':')[1].split("/")[0]
-            response_instance = http.request('DELETE', 'https://nsgrid1.utdallas.edu/wapi/v2.10/record:host/' + record + ':' + host +'/default?_return_as_object=1', headers=headers)
+            response_instance = http.request('DELETE', 'https://<hostname>/wapi/v2.10/record:host/' + record + ':' + host +'/default?_return_as_object=1', headers=headers)
             print(response_instance.data)
         
     return {
